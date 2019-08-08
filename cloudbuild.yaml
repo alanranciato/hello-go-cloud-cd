@@ -35,4 +35,4 @@ steps:
      gcloud container clusters  delete hello-go-cloud-$BRANCH_NAME --zone=us-central1-a --quiet || echo 'cluster not found'
 - name: 'gcr.io/cloud-builders/gcloud'
   args: ["container", "clusters", "create", "hello-go-cloud-$BRANCH_NAME", "--zone=us-central1-a", "--enable-network-policy", "--subnetwork=default"]
-  waitFor: ['delete-current-cluster']
+  waitFor: ['GKE Destroy Dev']
