@@ -25,3 +25,11 @@ steps:
   - 'gcr.io/$PROJECT_ID/hello-go-cloud:$SHORT_SHA'
   env:
   - 'PROJECT_ID=$PROJECT_ID'
+- name: 'gcr.io/cloud-builders/gcloud'
+  id: GKE Destroy Dev
+ # args: ["container", "clusters", "delete", "clustername","--zone=us-central1-a", "--quiet", ]
+  entrypoint: 'bash'
+  args:
+   - '-c'
+   - |
+     gcloud container clusters  delete hello-go-cloud-$BRANCH_NAME --zone=us-central1-a --quiet || echo 'cluster not found'
