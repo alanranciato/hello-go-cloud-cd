@@ -25,7 +25,6 @@ steps:
   - 'gcr.io/$PROJECT_ID/hello-go-cloud:$SHORT_SHA'
   env:
   - 'PROJECT_ID=$PROJECT_ID'
-  images: ['gcr.io/$PROJECT_ID/hello-go-cloud:$SHORT_SHA']
 - name: 'gcr.io/cloud-builders/gcloud'
   id: GKE Create QA
   #args: ["container", "clusters", "create", "hello-go-cloud-$BRANCH_NAME-$SHORT_SHA", "--zone=us-central1-a", "--enable-network-policy", "--subnetwork=default"]
@@ -47,3 +46,4 @@ steps:
   - '-c'
   - | 
     [[ "$BRANCH_NAME" == "master" ]] && gcloud container clusters delete hello-go-cloud-$BRANCH_NAME-$SHORT_SHA --zone=us-central1-a  --quiet || echo 'No Cluster Exists'
+- images: ['gcr.io/$PROJECT_ID/hello-go-cloud:$SHORT_SHA']
