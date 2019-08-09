@@ -35,4 +35,4 @@ steps:
 #  - echo deploying
 - name: 'gcr.io/cloud-builders/gcloud'
   id: GKE Destroy QA
-  args: ["container", "clusters", "delete", "hello-go-cloud-$BRANCH_NAME-$SHORT_SHA", "--zone=us-central1-a"]
+  args: ["container", "clusters", "delete", "hello-go-cloud-$BRANCH_NAME-$SHORT_SHA", "--zone=us-central1-a", "--quiet"]
