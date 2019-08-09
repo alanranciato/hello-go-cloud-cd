@@ -26,13 +26,14 @@ steps:
   env:
   - 'PROJECT_ID=$PROJECT_ID'
 - name: 'gcr.io/cloud-builders/gcloud'
-  id: GKE Destroy Dev
-  args: ["container", "clusters", "delete", "hello-go-cloud-$BRANCH_NAME","--zone=us-central1-a", "--quiet"]
+  id: GKE Destroy Stage
+  args: ["container", "clusters", "delete", "hello-go-cloud-$BRANCH_NAME-$SHORT_SHA","--zone=us-central1-a", "--quiet"]
   entrypoint: 'bash'
   args:
    - '-c'
    - |
      gcloud container clusters  delete hello-go-cloud-$BRANCH_NAME --zone=us-central1-a --quiet || echo 'cluster not found'
 - name: 'gcr.io/cloud-builders/gcloud'
-  args: ["container", "clusters", "create", "hello-go-cloud-$BRANCH_NAME", "--zone=us-central1-a", "--enable-network-policy", "--subnetwork=default"]
-  waitFor: ['GKE Destroy Dev']
+  id: GKE Create Stage
+  args: ["container", "clusters", "create", "hello-go-cloud-$BRANCH_NAME-$SHORT_SHA", "--zone=us-central1-a", "--enable-network-policy", "--subnetwork=default"]
+  waitFor: ['GKE Destroy Stage']
