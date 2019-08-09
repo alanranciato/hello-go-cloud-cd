@@ -32,7 +32,7 @@ steps:
   args:
    - '-c'
    - |
-     gcloud container clusters  delete hello-go-cloud-$BRANCH_NAME --zone=us-central1-a --quiet || echo 'cluster not found'
+     gcloud container clusters  delete hello-go-cloud-$BRANCH_NAME-$SHORT_SHA --zone=us-central1-a --quiet || echo 'cluster not found'
 - name: 'gcr.io/cloud-builders/gcloud'
   id: GKE Create Stage
   args: ["container", "clusters", "create", "hello-go-cloud-$BRANCH_NAME-$SHORT_SHA", "--zone=us-central1-a", "--enable-network-policy", "--subnetwork=default"]
