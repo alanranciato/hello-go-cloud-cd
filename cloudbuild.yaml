@@ -45,5 +45,5 @@ steps:
   args:
   - '-c'
   - | 
-    [[ "$BRANCH_NAME" == "master" ]] && gcloud container clusters delete hello-go-cloud-$BRANCH_NAME-$SHORT_SHA --zone=us-central1-a  --quiet || echo 'No Cluster Exists'
+    [[ "$BRANCH_NAME" == "master" ]] && gcloud container clusters delete hello-go-cloud-$BRANCH_NAME-$SHORT_SHA --zone=us-central1-a  --quiet || echo 'No Cluster Exists '
 images: ['gcr.io/$PROJECT_ID/hello-go-cloud:$SHORT_SHA']
