@@ -32,7 +32,7 @@ steps:
   args:
   - '-c'
   - | 
-    [[ "$BRANCH_NAME" == "master" ]] && gcloud container clusters create hello-go-cloud-$BRANCH_NAME-$SHORT_SHA --zone=us-central1-a --enable-network-policy --subnetwork=default || echo 'cluster already created going to next'
+    [[ "$BRANCH_NAME" != "master" ]] && gcloud container clusters create hello-go-cloud-$BRANCH_NAME-$SHORT_SHA --zone=us-central1-a --enable-network-policy --subnetwork=default || echo 'cluster already created going to next'
 #- name: 'gcr.io/cloud-builders/gcloud'
 #  id: Deploy QA
 #  entrypoint: 'bash'
