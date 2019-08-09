@@ -27,7 +27,11 @@ steps:
   - 'PROJECT_ID=$PROJECT_ID'
 - name: 'gcr.io/cloud-builders/gcloud'
   id: GKE Create QA
-  args: ["container", "clusters", "create", "hello-go-cloud-$BRANCH_NAME-$SHORT_SHA", "--zone=us-central1-a", "--enable-network-policy", "--subnetwork=default"]
+  #args: ["container", "clusters", "create", "hello-go-cloud-$BRANCH_NAME-$SHORT_SHA", "--zone=us-central1-a", "--enable-network-policy", "--subnetwork=default"]
+  args:
+  - c
+  - | 
+  - [[ "$BRANCH_NAME" == "master" ]] && gcloud container clusters create hello-go-cloud-$BRANCH_NAME-$SHORT_SHA --zone=us-central1-a --enable-network-policy --subnetwork=default || echo 'cluster already created going to next'
 #- name: 'gcr.io/cloud-builders/gcloud'
 #  id: Deploy QA
 #  entrypoint: 'bash'
@@ -35,4 +39,8 @@ steps:
 #  - echo deploying
 - name: 'gcr.io/cloud-builders/gcloud'
   id: GKE Destroy QA
-  args: ["container", "clusters", "delete", "hello-go-cloud-$BRANCH_NAME-$SHORT_SHA", "--zone=us-central1-a", "--quiet"]
+ # args: ["container", "clusters", "delete", "hello-go-cloud-$BRANCH_NAME-$SHORT_SHA", "--zone=us-central1-a", "--quiet"]
+  args:
+  - c
+  - | 
+  - [[ "$BRANCH_NAME" == "master" ]] && gcloud container clusters delete hello-go-cloud-$BRANCH_NAME-$SHORT_SHA --zone=us-central1-a  --quiet || echo 'No Cluster Exists'
