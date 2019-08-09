@@ -28,6 +28,7 @@ steps:
 - name: 'gcr.io/cloud-builders/gcloud'
   id: GKE Create QA
   #args: ["container", "clusters", "create", "hello-go-cloud-$BRANCH_NAME-$SHORT_SHA", "--zone=us-central1-a", "--enable-network-policy", "--subnetwork=default"]
+  entrypoint: 'bash'
   args:
   - c
   - | 
@@ -40,6 +41,7 @@ steps:
 - name: 'gcr.io/cloud-builders/gcloud'
   id: GKE Destroy QA
  # args: ["container", "clusters", "delete", "hello-go-cloud-$BRANCH_NAME-$SHORT_SHA", "--zone=us-central1-a", "--quiet"]
+  entrypoint: 'bash'
   args:
   - c
   - | 
