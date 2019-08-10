@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: hello-go-cloud
+  name: hello-go-cloud
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: hello-go-cloud
+  template:
+    metadata:
+      labels:
+        app: hello-go-cloud
+    spec:
+      containers:
+      - image: gcr.io/ranciato-ci-playground/hello-go-cloud:latest
+        name: hello-go-cloud
+        imagePullPolicy: Always
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+        ports:
+        - containerPort: 8080
+          name: hello-go-cloud
