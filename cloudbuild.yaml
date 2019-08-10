@@ -35,10 +35,14 @@ steps:
   - | 
     [[ "$BRANCH_NAME" != "master" ]] && gcloud container clusters create hello-go-cloud-$BRANCH_NAME-$SHORT_SHA --zone=us-central1-a --enable-network-policy --subnetwork=default || echo 'cluster already created'
 - name: 'gcr.io/cloud-builders/kubectl'
-  args: ['apply', '-f', 'k8s/']
-  env:
-  - 'CLOUDSDK_COMPUTE_ZONE=zone=us-central1-a'
-  - 'CLOUDSDK_CONTAINER_CLUSTER=hello-go-cloud-$BRANCH_NAME-$SHORT_SHA'
+  args:
+  - kubectl apply -R -f k8s/
+- name: 'ubuntu'
+  id: 'Break Time'
+  entrypoint: 'bash'
+  args:
+  - 'sleep 240'
+  waitFor: 'GKE Create QA'
 - name: 'gcr.io/cloud-builders/gcloud'
   id: GKE Destroy QA
   entrypoint: 'bash'
@@ -47,5 +51,7 @@ steps:
   - | 
     [[ "$BRANCH_NAME" == "master" ]] && gcloud container clusters delete hello-go-cloud-$BRANCH_NAME-$SHORT_SHA --zone=us-central1-a  --quiet || echo 'No Cluster Exists to delete'
   waitFor:
-      - 'GKE Create QA'
-images: ['gcr.io/$PROJECT_ID/hello-go-cloud:$SHORT_SHA']
+      - 'Break Time'
+images: 
+  - 'gcr.io/$PROJECT_ID/hello-go-cloud:$SHORT_SHA'
+  - 'gcr.io/$PROJECT_ID/hello-go-cloud:latest'
