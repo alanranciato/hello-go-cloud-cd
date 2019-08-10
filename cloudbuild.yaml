@@ -3,6 +3,9 @@ steps:
   id: Install Go
   args: ['install', '.']
   env: ['PROJECT_ROOT=hello-go-cloud']
+  volumes:
+  - name: 'vol1'
+    path: '/code_persist'
 - name: 'gcr.io/cloud-builders/go'
   id: Build
   args: ['build', 'hello-go-cloud']
@@ -37,10 +40,12 @@ steps:
 - name: 'gcr.io/cloud-builders/kubectl'
   args:
   - 'kubectl apply -R -f k8s/'
+  volumes:
+  - name: 'vol1'
+    path: '/code_persist'
 - name: 'ubuntu'
   id: 'Break Time'
-  entrypoint: 'bash'
-  args: ['sleep 240']
+  args: ['sleep', '300']
   waitFor: 
   - 'GKE Create QA'
 - name: 'gcr.io/cloud-builders/gcloud'
