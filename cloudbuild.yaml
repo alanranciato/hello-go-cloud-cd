@@ -41,7 +41,8 @@ steps:
   id: 'Break Time'
   entrypoint: 'bash'
   args: ['sleep 240']
-  waitFor: 'GKE Create QA'
+  waitFor: 
+  - 'GKE Create QA'
 - name: 'gcr.io/cloud-builders/gcloud'
   id: GKE Destroy QA
   entrypoint: 'bash'
@@ -50,7 +51,7 @@ steps:
   - | 
     [[ "$BRANCH_NAME" == "master" ]] && gcloud container clusters delete hello-go-cloud-$BRANCH_NAME-$SHORT_SHA --zone=us-central1-a  --quiet || echo 'No Cluster Exists to delete'
   waitFor:
-      - 'Break Time'
+  - 'Break Time'
 images: 
   - 'gcr.io/$PROJECT_ID/hello-go-cloud:$SHORT_SHA'
   - 'gcr.io/$PROJECT_ID/hello-go-cloud:latest'
