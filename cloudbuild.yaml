@@ -48,7 +48,8 @@ steps:
     path: '/code_persist'
 - name: 'ubuntu'
   id: 'Break Time'
-  args: ['sleep', '300']
+  args: ['sleep', '150']
+  timeout: 600
   waitFor: 
   - 'GKE Create QA'
 - name: 'gcr.io/cloud-builders/gcloud'
