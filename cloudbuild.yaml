@@ -49,7 +49,7 @@ steps:
 - name: 'ubuntu'
   id: 'Break Time'
   args: ['sleep', '150']
-  timeout: '600'
+  timeout: '600s'
   waitFor: 
   - 'GKE Create QA'
 - name: 'gcr.io/cloud-builders/gcloud'
