@@ -3,7 +3,7 @@
 
   
 
-Hello World Golang app to demo GCP CloudBuild on GKE - CI
+Hello World Golang app to demo GCP CloudBuild on GKE - CI 
 
 ## Connect Repository
 Connect GitHub, Bitbucket or GKE Repository
