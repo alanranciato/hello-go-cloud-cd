@@ -2,21 +2,21 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    app: hello-go-cloud
-  name: hello-go-cloud
+    app: ${_PROJECT_NAME}
+  name: ${_PROJECT_NAME}
 spec:
   replicas: 3
   selector:
     matchLabels:
-      app: hello-go-cloud
+      app: ${_PROJECT_NAME}
   template:
     metadata:
       labels:
-        app: hello-go-cloud
+        app: ${_PROJECT_NAME}
     spec:
       containers:
-      - image: gcr.io/ranciato-ci-playground/hello-go-cloud:latest
-        name: hello-go-cloud
+      - image: gcr.io/$PROJECT_ID/${_PROJECT_NAME}:$SHORT_SHA
+        name: ${_PROJECT_NAME}
         imagePullPolicy: Always
         readinessProbe:
           httpGet:
@@ -24,4 +24,4 @@ spec:
             port: 8080
         ports:
         - containerPort: 8080
-          name: hello-go-cloud
+          name: ${_PROJECT_NAME}

@@ -2,32 +2,30 @@ steps:
 - name: 'gcr.io/cloud-builders/go'
   id: Install Go
   args: ['install', '.']
-  env: ['PROJECT_ROOT=hello-go-cloud']
+  env: ['PROJECT_ROOT=${_PROJECT_NAME}']
   volumes:
   - name: 'vol1'
     path: '/code_persist'
 - name: 'gcr.io/cloud-builders/go'
   id: Build
-  args: ['build', 'hello-go-cloud']
-  env: ['PROJECT_ROOT=hello-go-cloud']
+  args: ['build', '${_PROJECT_NAME}']
+  env: ['PROJECT_ROOT=${_PROJECT_NAME}']
 - name: 'gcr.io/cloud-builders/go'
   id: Test
   args: ['test']
-  env: ['PROJECT_ROOT=hello-go-cloud']
+  env: ['PROJECT_ROOT=${_PROJECT_NAME}']
 - name: 'gcr.io/cloud-builders/docker'
   id: Container Build 
   args:
   - 'build'
   - '-t'
-  - 'gcr.io/$PROJECT_ID/hello-go-cloud:$SHORT_SHA'
-  - '-t'
-  - 'gcr.io/$PROJECT_ID/hello-go-cloud:latest'
+  - 'gcr.io/$PROJECT_ID/${_PROJECT_NAME}:$SHORT_SHA'
   - '.'
 - name: 'gcr.io/cloud-builders/docker'
   id: Push
   args:
   - 'push'
-  - 'gcr.io/$PROJECT_ID/hello-go-cloud:$SHORT_SHA'
+  - 'gcr.io/$PROJECT_ID/${_PROJECT_NAME}:$SHORT_SHA'
   env:
   - 'PROJECT_ID=$PROJECT_ID'
 - name: 'gcr.io/cloud-builders/gcloud'
@@ -36,7 +34,7 @@ steps:
   args:
   - '-c'
   - | 
-    [[ "$BRANCH_NAME" != "master" ]] && gcloud container clusters create hello-go-cloud-$BRANCH_NAME-$SHORT_SHA --zone=us-central1-a --enable-network-policy --subnetwork=default || echo 'cluster already created'
+    [[ "$BRANCH_NAME" != "master" ]] && gcloud container clusters create ${_PROJECT_NAME}-$BRANCH_NAME-$SHORT_SHA --zone=us-central1-a --enable-network-policy --subnetwork=default || echo 'cluster already created'
 - name: 'gcr.io/cloud-builders/kubectl'
   args:
   - 'apply' 
@@ -48,7 +46,7 @@ steps:
     path: '/code_persist'
 - name: 'ubuntu'
   id: 'Break Time'
-  args: ['sleep', '150']
+  args: ['sleep', '30']
   timeout: '600s'
   waitFor: 
   - 'GKE Create QA'
@@ -58,9 +56,8 @@ steps:
   args:
   - '-c'
   - | 
-    [[ "$BRANCH_NAME" == "master" ]] && gcloud container clusters delete hello-go-cloud-$BRANCH_NAME-$SHORT_SHA --zone=us-central1-a  --quiet || echo 'No Cluster Exists to delete'
+    [[ "$BRANCH_NAME" == "master" ]] && gcloud container clusters delete ${_PROJECT_NAME}-$BRANCH_NAME-$SHORT_SHA --zone=us-central1-a  --quiet || echo 'No Cluster Exists to delete'
   waitFor:
   - 'Break Time'
 images: 
-  - 'gcr.io/$PROJECT_ID/hello-go-cloud:$SHORT_SHA'
-  - 'gcr.io/$PROJECT_ID/hello-go-cloud:latest'
+  - 'gcr.io/$PROJECT_ID/${_PROJECT_NAME}:$SHORT_SHA'
