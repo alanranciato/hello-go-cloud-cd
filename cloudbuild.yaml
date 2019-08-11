@@ -46,7 +46,7 @@ steps:
   volumes:
   - name: 'vol1'
     path: '/code_persist'
-- name: 'gcr.io/cloud-builders/gcloud'
+- name: 'gcr.io/cloud-builders/kubectl'
   id: Create Deployment
   args:
   - 'apply'
@@ -56,7 +56,7 @@ steps:
   volumes:
   - name: 'vol1'
     path: '/code_persist'
-- name: 'gcr.io/cloud-builders/gcloud'
+- name: 'gcr.io/cloud-builders/kubectl'
   entrypoint: /bin/sh
   id: Test Cluster
   args:
