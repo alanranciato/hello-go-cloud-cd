@@ -35,7 +35,6 @@ steps:
   - '-c'
   - | 
     [[ "$BRANCH_NAME" != "master" ]] && gcloud container clusters create ${_PROJECT_NAME}-$BRANCH_NAME-$SHORT_SHA --zone=${_ZONE} --enable-network-policy --subnetwork=default || echo 'cluster already created'
-# This step replaces the tokens in the K8s manifests
 - name: 'gcr.io/cloud-builders/gcloud'
   id: Transform manifest
   entrypoint: /bin/sh
@@ -50,8 +49,8 @@ steps:
 - name: 'gcr.io/cloud-builders/gcloud'
   id: 'Create Deployment'
   args:
-  - 'apply' 
-  - '-R' 
+  - 'apply'
+  - '-R'
   - '-f'
   - 'k8s/'
   volumes:
