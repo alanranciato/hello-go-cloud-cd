@@ -43,7 +43,10 @@ steps:
   - '-c'
   - |
      sed "s/_PROJECT_NAME/${_PROJECT_NAME}/g;s/_SHORT_SHA/${SHORT_SHA}/g;s/_PROJECT_ID/${PROJECT_ID}/g" k8s/manifest.yaml | \
-     sed "s/_PROJECT_NAME/${_PROJECT_NAME}/g" k8s/service.yaml
+     sed "s/_PROJECT_NAME/${_PROJECT_NAME}/g" k8s/service.yaml | cat k8s/manifest.yaml | cat k8s/service.yaml
+  volumes:
+  - name: 'vol1'
+    path: '/code_persist'
 - name: 'gcr.io/cloud-builders/kubectl'
   args:
   - 'apply' 
