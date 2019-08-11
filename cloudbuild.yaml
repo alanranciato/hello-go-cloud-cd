@@ -2,48 +2,77 @@ steps:
 - name: 'gcr.io/cloud-builders/go'
   id: Install Go
   args: ['install', '.']
-  env: ['PROJECT_ROOT=hello-go-cloud']
+  env: ['PROJECT_ROOT=${_PROJECT_NAME}']
+  volumes:
+  - name: 'vol1'
+    path: '/code_persist'
 - name: 'gcr.io/cloud-builders/go'
   id: Build
-  args: ['build', 'hello-go-cloud']
-  env: ['PROJECT_ROOT=hello-go-cloud']
+  args: ['build', '${_PROJECT_NAME}']
+  env: ['PROJECT_ROOT=${_PROJECT_NAME}']
 - name: 'gcr.io/cloud-builders/go'
   id: Test
   args: ['test']
-  env: ['PROJECT_ROOT=hello-go-cloud']
+  env: ['PROJECT_ROOT=${_PROJECT_NAME}']
 - name: 'gcr.io/cloud-builders/docker'
   id: Container Build 
   args:
   - 'build'
   - '-t'
-  - 'gcr.io/$PROJECT_ID/hello-go-cloud:$SHORT_SHA'
+  - 'gcr.io/$PROJECT_ID/${_PROJECT_NAME}:$SHORT_SHA'
   - '.'
 - name: 'gcr.io/cloud-builders/docker'
   id: Push
   args:
   - 'push'
-  - 'gcr.io/$PROJECT_ID/hello-go-cloud:$SHORT_SHA'
+  - 'gcr.io/$PROJECT_ID/${_PROJECT_NAME}:$SHORT_SHA'
   env:
   - 'PROJECT_ID=$PROJECT_ID'
 - name: 'gcr.io/cloud-builders/gcloud'
   id: GKE Create QA
-  #args: ["container", "clusters", "create", "hello-go-cloud-$BRANCH_NAME-$SHORT_SHA", "--zone=us-central1-a", "--enable-network-policy", "--subnetwork=default"]
   entrypoint: 'bash'
   args:
   - '-c'
   - | 
-    [[ "$BRANCH_NAME" == "master" ]] && gcloud container clusters create hello-go-cloud-$BRANCH_NAME-$SHORT_SHA --zone=us-central1-a --enable-network-policy --subnetwork=default || echo 'cluster already created'
-#- name: 'gcr.io/cloud-builders/gcloud'
-#  id: Deploy QA
-#  entrypoint: 'bash'
-#  args:
-#  - echo deploying
+    [[ "$BRANCH_NAME" != "master" ]] && gcloud container clusters create ${_PROJECT_NAME}-$BRANCH_NAME-$SHORT_SHA --zone=${_ZONE} --enable-network-policy --subnetwork=default || echo 'cluster already created'
+- name: 'gcr.io/cloud-builders/gcloud'
+  id: Transform manifest
+  entrypoint: /bin/sh
+  args:
+  - '-c'
+  - |
+     sed -i "s/_PROJECT_NAME/${_PROJECT_NAME}/g;s/_SHORT_SHA/${SHORT_SHA}/g;s/_PROJECT_ID/${PROJECT_ID}/g" k8s/manifest.yaml | \
+     sed -i "s/_PROJECT_NAME/${_PROJECT_NAME}/g" k8s/service.yaml 
+  volumes:
+  - name: 'vol1'
+    path: '/code_persist'
+- name: 'gcr.io/cloud-builders/kubectl'
+  id: Create Deployment
+  args:
+  - 'apply'
+  - '-R'
+  - '-f'
+  - 'k8s/'
+  volumes:
+  - name: 'vol1'
+    path: '/code_persist'
+- name: 'gcr.io/cloud-builders/gcloud'
+  entrypoint: /bin/sh
+  id: Test Cluster
+  args:
+  - '-c'
+  - |
+     sleep 60 && test $(curl -s -I $(kubectl get services ${_PROJECT_NAME} --no-headers=true | awk '{print $4}') | grep HTTP/1.1 | awk {'print $2'}) -eq "200" && echo "All Tests Passed" || raise error "Application not active"
+  waitFor:
+  - 'Create Deployment'
 - name: 'gcr.io/cloud-builders/gcloud'
   id: GKE Destroy QA
- # args: ["container", "clusters", "delete", "hello-go-cloud-$BRANCH_NAME-$SHORT_SHA", "--zone=us-central1-a", "--quiet"]
   entrypoint: 'bash'
   args:
   - '-c'
   - | 
-    [[ "$BRANCH_NAME" == "master" ]] && gcloud container clusters delete hello-go-cloud-$BRANCH_NAME-$SHORT_SHA --zone=us-central1-a  --quiet || echo 'No Cluster Exists to delete'
-images: ['gcr.io/$PROJECT_ID/hello-go-cloud:$SHORT_SHA']
+    [[ "$BRANCH_NAME" == "master" ]] && gcloud container clusters delete ${_PROJECT_NAME}-$BRANCH_NAME-$SHORT_SHA --zone=${_ZONE}  --quiet || echo 'No Cluster Exists to delete'
+  waitFor:
+  - 'Test Cluster'
+images: 
+  - 'gcr.io/$PROJECT_ID/${_PROJECT_NAME}:$SHORT_SHA'
