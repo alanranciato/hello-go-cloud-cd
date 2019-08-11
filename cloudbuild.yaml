@@ -58,7 +58,7 @@ steps:
   - name: 'vol1'
     path: '/code_persist'
 - name: 'gcr.io/cloud-builders/gcloud'
-  entrypoint: 'bash'
+  entrypoint: /bin/sh
   id: 'Test Cluster'
   args:
   - sleep 60 && test $(curl -s -I $(kubectl get services ${_PROJECT_NAME} --no-headers=true | awk '{print $4}') | grep HTTP/1.1 | awk {'print $2'}) -eq "200" && echo "All Tests Passed" || raise error "Application not active"
