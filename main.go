@@ -14,6 +14,7 @@ func getFrontpage(w http.ResponseWriter, r *http.Request) {
 
 func health(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
+	fmt.Fprintf(w, "OK")
 }
 
 func getVersion(w http.ResponseWriter, r *http.Request) {

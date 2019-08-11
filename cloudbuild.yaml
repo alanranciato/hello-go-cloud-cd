@@ -56,10 +56,11 @@ steps:
   volumes:
   - name: 'vol1'
     path: '/code_persist'
-- name: 'ubuntu'
-  id: 'Break Time'
-  args: ['sleep', '30']
-  timeout: '600s'
+- name: 'gcr.io/cloud-builders/gcloud'
+  entrypoint: 'bash'  
+  id: 'Test Cluster'
+  args:
+  - test $(curl -s -I $(kubectl get services ${_PROJECT_NAME} --no-headers=true | awk '{print $4}') | grep HTTP/1.1 | awk {'print $2'}) -eq "200" && echo "All Tests Passed" || raise error "Application not active"
   waitFor: 
   - 'GKE Create QA'
 - name: 'gcr.io/cloud-builders/gcloud'
@@ -70,6 +71,6 @@ steps:
   - | 
     [[ "$BRANCH_NAME" == "master" ]] && gcloud container clusters delete ${_PROJECT_NAME}-$BRANCH_NAME-$SHORT_SHA --zone=us-central1-a  --quiet || echo 'No Cluster Exists to delete'
   waitFor:
-  - 'Break Time'
+  - 'Test Cluster'
 images: 
   - 'gcr.io/$PROJECT_ID/${_PROJECT_NAME}:$SHORT_SHA'
