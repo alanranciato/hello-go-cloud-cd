@@ -34,7 +34,7 @@ steps:
   args:
   - '-c'
   - | 
-    [[ "$BRANCH_NAME" != "master" ]] && gcloud container clusters create ${_PROJECT_NAME}-$BRANCH_NAME-$SHORT_SHA --zone=us-central1-a --enable-network-policy --subnetwork=default || echo 'cluster already created'
+    [[ "$BRANCH_NAME" != "master" ]] && gcloud container clusters create ${_PROJECT_NAME}-$BRANCH_NAME-$SHORT_SHA --zone=${_ZONE} --enable-network-policy --subnetwork=default || echo 'cluster already created'
 # This step replaces the tokens in the K8s manifests
 - name: 'gcr.io/cloud-builders/gcloud'
   id: Transform manifest
@@ -48,6 +48,7 @@ steps:
   - name: 'vol1'
     path: '/code_persist'
 - name: 'gcr.io/cloud-builders/kubectl'
+  id: 'Create Deployment'
   args:
   - 'apply' 
   - '-R' 
@@ -62,14 +63,14 @@ steps:
   args:
   - test $(curl -s -I $(kubectl get services ${_PROJECT_NAME} --no-headers=true | awk '{print $4}') | grep HTTP/1.1 | awk {'print $2'}) -eq "200" && echo "All Tests Passed" || raise error "Application not active"
   waitFor: 
-  - 'GKE Create QA'
+  - 'Create Deployment'
 - name: 'gcr.io/cloud-builders/gcloud'
   id: GKE Destroy QA
   entrypoint: 'bash'
   args:
   - '-c'
   - | 
-    [[ "$BRANCH_NAME" == "master" ]] && gcloud container clusters delete ${_PROJECT_NAME}-$BRANCH_NAME-$SHORT_SHA --zone=us-central1-a  --quiet || echo 'No Cluster Exists to delete'
+    [[ "$BRANCH_NAME" == "master" ]] && gcloud container clusters delete ${_PROJECT_NAME}-$BRANCH_NAME-$SHORT_SHA --zone=${_ZONE}  --quiet || echo 'No Cluster Exists to delete'
   waitFor:
   - 'Test Cluster'
 images: 
