@@ -35,6 +35,15 @@ steps:
   - '-c'
   - | 
     [[ "$BRANCH_NAME" != "master" ]] && gcloud container clusters create ${_PROJECT_NAME}-$BRANCH_NAME-$SHORT_SHA --zone=us-central1-a --enable-network-policy --subnetwork=default || echo 'cluster already created'
+# This step replaces the tokens in the K8s manifests
+- name: 'gcr.io/cloud-builders/gcloud'
+  id: Transform manifest
+  entrypoint: /bin/sh
+  args:
+  - '-c'
+  - |
+     sed "s/_PROJECT_NAME/${_PROJECT_NAME}/g;s/_SHORT_SHA/${SHORT_SHA}/g;s/_PROJECT_ID/${PROJECT_ID}/g" k8s/manifest.yaml | \
+     sed "s/_PROJECT_NAME/${_PROJECT_NAME}/g" k8s/service.yaml
 - name: 'gcr.io/cloud-builders/kubectl'
   args:
   - 'apply' 

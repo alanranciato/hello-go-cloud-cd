@@ -1,10 +1,10 @@
 kind: Service
 apiVersion: v1
 metadata:
-  name: ${_PROJECT_NAME}
+  name: _PROJECT_NAME
 spec:
   selector:
-     app: ${_PROJECT_NAME}
+     app: _PROJECT_NAME
   ports:
   - protocol: TCP
     port: 80
