@@ -18,9 +18,6 @@ steps:
   id: Install Go
   args: ['install', '.']
   env: ['PROJECT_ROOT=${_PROJECT_NAME}']
-  volumes:
-  - name: 'vol1'
-    path: '/code_persist'
 - name: 'gcr.io/cloud-builders/go'
   id: Build
   args: ['build', '${_PROJECT_NAME}']
