@@ -1,55 +1,32 @@
+# GitOps-style Continuous Delivery For Kubernetes Engine With Cloud Build
 
-# GCP GKE / CloudBuild CI Demo
+This repository contains the code used in the
+[GitOps-style Continuous Delivery with Cloud Build](https://cloud.google.com/kubernetes-engine/docs/tutorials/gitops-cloud-build)
+tutorial.
 
-  
+GitOps is a Continuous Delivery approach [first described by Weaveworks](https://www.weave.works/blog/gitops-operations-by-pull-request) that is
+popular in the Kubernetes community. A key part of GitOps is the idea of
+"environments-as-code": describing your deployments declaratively by files (for
+example, Kubernetes manifests) stored in a Git repository.
 
-Hello World Golang app to demo GCP CloudBuild on GKE - CI 
+In this tutorial, you create a CI/CD pipeline that automatically builds a
+container image from commited code, stores the image in Google Container
+Registry, updates a Kubernetes manifest in a Git repository and triggers a
+deployment to Kubernetes Engine using that manifest.
 
-## Connect Repository
-Connect GitHub, Bitbucket or GKE Repository
-  
-## Trigger
-Create build trigger.  Can create against any branch or all.  Current sample filters "master" branch out in create a destroy steps.
-- Add variables to the trigger:
-   
-       _PROJECT_NAME - name of the project (will transform to the K8s cluster, docker image, and load balancer)
-   
-       _ZONE - enter the GCP zone for the cluster to be created in.
+This tutorial uses two Git repositories: one for the application —the _app_
+repository— and one for storing the deployment manifests —the _env_ repository.
+When a change is pushed to the application repository, tests are run, a
+container image is built and pushed to Container Registry. Once the image is
+pushed, the deployment manifests are updated to use that new image and they are
+pushed to the _candidate_ branch of the _env_ repository. This triggers the actual
+deployment in Kubernetes. Once the deployment is finished, the new manifests
+are copied over to the _production_ branch of the _env_ repository.
 
-       _TEARDOWN - true/false.  Whether or not to teardown the test cluster when complete.
-
-
-## Run Steps
-
- 1. Application Install
- 2. Application Build
- 3. Application Unit Test
- 4. Package Docker Application
- 5. Push Docker Image
- 6. Create GKE Cluster
- 7. Transform Manifests
- 8. Apply (deploy) k8s configuration (application & services)
- 9. Test Deployment (query LB IP and cURL result)
- 10. Destroy QA Cluster
-  
----
-### GoLang App
-
-  
-
-Run golang program
-```
-go run main.go
-```
-Testing
-```
-go test
-```
-Build binary
-```
-go build
-```
-Install binary
-```
-go install
-```
+In the end, you have a system where:
+* The _candidate_ branch is a history of the deployment attempts.
+* The _production_ branch is a history of the successful deployments.
+* You have a view of successful and failed deployments in Cloud Build.
+* You can rollback to any previous deployment by re-executing the corresponding
+  job in Cloud Build. A rollback also updates the _production_ branch to
+  truthfully reflect the history of deployments.

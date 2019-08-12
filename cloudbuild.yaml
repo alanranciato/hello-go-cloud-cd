@@ -1,3 +1,18 @@
+# Copyright 2018 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# [START cloudbuild]
 steps:
 - name: 'gcr.io/cloud-builders/go'
   id: Install Go
@@ -28,54 +43,40 @@ steps:
   - 'gcr.io/$PROJECT_ID/${_PROJECT_NAME}:$SHORT_SHA'
   env:
   - 'PROJECT_ID=$PROJECT_ID'
+  # This step clones the hello-cloudbuild-env repository
 - name: 'gcr.io/cloud-builders/gcloud'
-  id: GKE Create QA
-  entrypoint: 'bash'
-  args:
-  - '-c'
-  - | 
-    gcloud container clusters create ${_PROJECT_NAME} --zone=${_ZONE} --enable-network-policy --subnetwork=default || echo 'cluster already created'
-- name: 'gcr.io/cloud-builders/gcloud'
-  id: Transform manifest
+  id: Clone env repository
   entrypoint: /bin/sh
   args:
   - '-c'
   - |
-     sed -i "s/_PROJECT_NAME/${_PROJECT_NAME}/g;s/_SHORT_SHA/${SHORT_SHA}/g;s/_PROJECT_ID/${PROJECT_ID}/g" k8s/manifest.yaml | \
-     sed -i "s/_PROJECT_NAME/${_PROJECT_NAME}/g" k8s/service.yaml 
-  volumes:
-  - name: 'vol1'
-    path: '/code_persist'
-- name: 'gcr.io/cloud-builders/kubectl'
-  id: Create Deployment
-  args:
-  - 'apply'
-  - '-R'
-  - '-f'
-  - 'k8s/'
-  volumes:
-  - name: 'vol1'
-    path: '/code_persist'
-  env:
-  - 'CLOUDSDK_COMPUTE_ZONE=${_ZONE}'
-  - 'CLOUDSDK_CONTAINER_CLUSTER=${_PROJECT_NAME}'
+    gcloud source repos clone ${_PROJECT_NAME}-env && \
+    cd ${_PROJECT_NAME}-env && \
+    git checkout candidate && \
+    git config user.email $(gcloud auth list --filter=status:ACTIVE --format='value(account)')
+
+# This step generates the new manifest
 - name: 'gcr.io/cloud-builders/gcloud'
+  id: Generate manifest
   entrypoint: /bin/sh
-  id: Test Cluster
   args:
   - '-c'
   - |
-     sleep 120 && test $(curl -s -I $(kubectl get services ${_PROJECT_NAME} --no-headers=true | awk '{print $4}') | grep HTTP/1.1 | awk {'print $2'}) -eq "200" && echo "All Tests Passed" || raise error "Application not active"
-  waitFor:
-  - 'Create Deployment'
+     sed "s/GOOGLE_CLOUD_PROJECT/${PROJECT_ID}/g;s/_PROJECT_NAME/${_PROJECT_NAME}/g" kubernetes.yaml.tpl | \
+     sed "s/COMMIT_SHA/${SHORT_SHA}/g" > ${_PROJECT_NAME}-env/kubernetes.yaml
+
+# This step pushes the manifest back to hello-cloudbuild-env
 - name: 'gcr.io/cloud-builders/gcloud'
-  id: GKE Destroy QA
-  entrypoint: 'bash'
+  id: Push manifest
+  entrypoint: /bin/sh
   args:
   - '-c'
-  - | 
-    [[ ${_TEARDOWN} != false ]] && gcloud container clusters delete ${_PROJECT_NAME}-$BRANCH_NAME-$SHORT_SHA --zone=${_ZONE}  --quiet || echo 'Teardown not enabled or no cluster exists to delete'
-  waitFor:
-  - 'Test Cluster'
-images: 
-  - 'gcr.io/$PROJECT_ID/${_PROJECT_NAME}:$SHORT_SHA'
+  - |
+    set -x && \
+    cd ${_PROJECT_NAME}-env && \
+    git add kubernetes.yaml && \
+    git commit -m "Deploying image gcr.io/${PROJECT_ID}/${_PROJECT_NAME}:${SHORT_SHA}
+    Built from commit ${COMMIT_SHA} of repository ${_PROJECT_NAME}
+    Author: $(git log --format='%an <%ae>' -n 1 HEAD)" && \
+    git push origin candidate
+# [END cloudbuild]
