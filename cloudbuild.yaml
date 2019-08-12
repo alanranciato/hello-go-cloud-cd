@@ -72,7 +72,7 @@ steps:
   args:
   - '-c'
   - | 
-    gcloud container clusters delete ${_PROJECT_NAME}-$BRANCH_NAME-$SHORT_SHA --zone=${_ZONE}  --quiet || echo 'No Cluster Exists to delete'
+    [[ ${_TEARDOWN} != false ]] && gcloud container clusters delete ${_PROJECT_NAME}-$BRANCH_NAME-$SHORT_SHA --zone=${_ZONE}  --quiet || echo 'Teardown not enabled or no cluster exists to delete'
   waitFor:
   - 'Test Cluster'
 images: 

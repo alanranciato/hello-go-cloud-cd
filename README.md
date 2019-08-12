@@ -16,6 +16,8 @@ Create build trigger.  Can create against any branch or all.  Current sample fil
    
        _ZONE - enter the GCP zone for the cluster to be created in.
 
+       _TEARDOWN - true/false.  Whether or not to teardown the test cluster when complete.
+
 
 ## Run Steps
 
