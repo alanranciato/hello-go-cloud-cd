@@ -14,7 +14,7 @@
 
 # [START cloudbuild]
 steps:
-- name: 'gcr.io/cloud-builders/go'
+- name: 'gcr.io/cloud-builders/go' 
   id: Install Go
   args: ['install', '.']
   env: ['PROJECT_ROOT=${_PROJECT_NAME}']
