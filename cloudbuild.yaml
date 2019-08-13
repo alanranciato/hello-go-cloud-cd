@@ -14,18 +14,26 @@
 
 # [START cloudbuild]
 steps:
+
+# This step installs GO dependencies
 - name: 'gcr.io/cloud-builders/go' 
   id: Install Go
   args: ['install', '.']
   env: ['PROJECT_ROOT=${_PROJECT_NAME}']
+
+# This step compiles the app
 - name: 'gcr.io/cloud-builders/go'
   id: Build
   args: ['build', '${_PROJECT_NAME}']
   env: ['PROJECT_ROOT=${_PROJECT_NAME}']
+
+# This step tests the app
 - name: 'gcr.io/cloud-builders/go'
   id: Test
   args: ['test']
   env: ['PROJECT_ROOT=${_PROJECT_NAME}']
+
+# This step creates the docker image
 - name: 'gcr.io/cloud-builders/docker'
   id: Container Build 
   args:
@@ -33,6 +41,8 @@ steps:
   - '-t'
   - 'gcr.io/$PROJECT_ID/${_PROJECT_NAME}:$SHORT_SHA'
   - '.'
+
+# This step pushes the docker image to teh registry
 - name: 'gcr.io/cloud-builders/docker'
   id: Push
   args:
@@ -40,6 +50,7 @@ steps:
   - 'gcr.io/$PROJECT_ID/${_PROJECT_NAME}:$SHORT_SHA'
   env:
   - 'PROJECT_ID=$PROJECT_ID'
+
   # This step clones the hello-cloudbuild-env repository
 - name: 'gcr.io/cloud-builders/gcloud'
   id: Clone env repository
