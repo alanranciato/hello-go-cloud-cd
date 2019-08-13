@@ -33,13 +33,6 @@ spec:
         image: gcr.io/GOOGLE_CLOUD_PROJECT/_PROJECT_NAME:COMMIT_SHA
         ports:
         - containerPort: 8080
-      readinessProbe:
-        httpGet:
-          path: /health
-          port: 8080
-        ports:
-        - containerPort: 8080
-          name: _PROJECT_NAME
 ---
 kind: Service
 apiVersion: v1
