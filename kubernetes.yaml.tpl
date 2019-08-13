@@ -19,7 +19,7 @@ metadata:
   labels:
     app: _PROJECT_NAME
 spec:
-  replicas: 1
+  replicas: 3
   selector:
     matchLabels:
       app: _PROJECT_NAME
